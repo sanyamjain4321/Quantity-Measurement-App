@@ -18,6 +18,10 @@ public class quantitymeasurementapp {
             return value * toFeetFactor;
         }
 
+        public double fromFeet(double feetValue) {
+            return feetValue / toFeetFactor;
+        }
+
         public static LengthUnit fromString(String unit) {
             if (unit == null) {
                 throw new IllegalArgumentException("Unit cannot be null");
@@ -69,6 +73,25 @@ public class quantitymeasurementapp {
             return unit.toFeet(value);
         }
 
+        public QuantityLength convertTo(LengthUnit targetUnit) {
+            if (targetUnit == null) {
+                throw new IllegalArgumentException("Target unit cannot be null");
+            }
+
+            double valueInFeet = this.toFeet();
+            double convertedValue = targetUnit.fromFeet(valueInFeet);
+            return new QuantityLength(convertedValue, targetUnit);
+        }
+
+        public static double convert(double value, LengthUnit sourceUnit, LengthUnit targetUnit) {
+            if (sourceUnit == null || targetUnit == null) {
+                throw new IllegalArgumentException("Units cannot be null");
+            }
+
+            double valueInFeet = sourceUnit.toFeet(value);
+            return targetUnit.fromFeet(valueInFeet);
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
@@ -76,12 +99,12 @@ public class quantitymeasurementapp {
             if (getClass() != obj.getClass()) return false;
 
             QuantityLength other = (QuantityLength) obj;
-            return Double.compare(this.toFeet(), other.toFeet()) == 0;
+            return Math.abs(this.toFeet() - other.toFeet()) < 0.0001;
         }
 
         @Override
         public int hashCode() {
-            return Double.hashCode(toFeet());
+            return Double.hashCode(Math.round(toFeet() * 10000.0) / 10000.0);
         }
 
         @Override
@@ -90,27 +113,26 @@ public class quantitymeasurementapp {
         }
     }
 
-    public static QuantityLength readQuantity(Scanner scanner) {
-        double value = scanner.nextDouble();
-        String unitText = scanner.next();
-        LengthUnit unit = LengthUnit.fromString(unitText);
-        return new QuantityLength(value, unit);
+    public static void demonstrateLengthConversion(double value, LengthUnit fromUnit, LengthUnit toUnit) {
+        double result = QuantityLength.convert(value, fromUnit, toUnit);
+        System.out.println("Output: " + result);
     }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
         try {
-            QuantityLength q1 = readQuantity(scanner);
-            QuantityLength q2 = readQuantity(scanner);
+            double value = scanner.nextDouble();
+            String fromUnitText = scanner.next();
+            String toUnitText = scanner.next();
 
-            if (q1.equals(q2)) {
-                System.out.println("Output: Equal (true)");
-            } else {
-                System.out.println("Output: Not Equal (false)");
-            }
+            LengthUnit fromUnit = LengthUnit.fromString(fromUnitText);
+            LengthUnit toUnit = LengthUnit.fromString(toUnitText);
+
+            double result = QuantityLength.convert(value, fromUnit, toUnit);
+            System.out.println("Output: " + result);
         } catch (Exception e) {
-            System.out.println("Output: Not Equal (false)");
+            System.out.println("Output: Invalid conversion");
         } finally {
             scanner.close();
         }
