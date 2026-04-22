@@ -92,6 +92,27 @@ public class quantitymeasurementapp {
             return targetUnit.fromFeet(valueInFeet);
         }
 
+        public QuantityLength add(QuantityLength other) {
+            if (other == null) {
+                throw new IllegalArgumentException("Other quantity cannot be null");
+            }
+
+            double thisInFeet = this.toFeet();
+            double otherInFeet = other.toFeet();
+            double sumInFeet = thisInFeet + otherInFeet;
+
+            double resultInThisUnit = this.unit.fromFeet(sumInFeet);
+            return new QuantityLength(resultInThisUnit, this.unit);
+        }
+
+        public static QuantityLength add(QuantityLength first, QuantityLength second) {
+            if (first == null || second == null) {
+                throw new IllegalArgumentException("Quantities cannot be null");
+            }
+
+            return first.add(second);
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
@@ -113,8 +134,8 @@ public class quantitymeasurementapp {
         }
     }
 
-    public static void demonstrateLengthConversion(double value, LengthUnit fromUnit, LengthUnit toUnit) {
-        double result = QuantityLength.convert(value, fromUnit, toUnit);
+    public static void demonstrateLengthAddition(QuantityLength q1, QuantityLength q2) {
+        QuantityLength result = QuantityLength.add(q1, q2);
         System.out.println("Output: " + result);
     }
 
@@ -122,17 +143,21 @@ public class quantitymeasurementapp {
         Scanner scanner = new Scanner(System.in);
 
         try {
-            double value = scanner.nextDouble();
-            String fromUnitText = scanner.next();
-            String toUnitText = scanner.next();
+            // Example input:
+            // 1.0 feet
+            // 12.0 inches
+            double value1 = scanner.nextDouble();
+            String unit1 = scanner.next();
+            double value2 = scanner.nextDouble();
+            String unit2 = scanner.next();
 
-            LengthUnit fromUnit = LengthUnit.fromString(fromUnitText);
-            LengthUnit toUnit = LengthUnit.fromString(toUnitText);
+            QuantityLength q1 = new QuantityLength(value1, LengthUnit.fromString(unit1));
+            QuantityLength q2 = new QuantityLength(value2, LengthUnit.fromString(unit2));
 
-            double result = QuantityLength.convert(value, fromUnit, toUnit);
+            QuantityLength result = q1.add(q2);
             System.out.println("Output: " + result);
         } catch (Exception e) {
-            System.out.println("Output: Invalid conversion");
+            System.out.println("Output: Invalid addition");
         } finally {
             scanner.close();
         }
