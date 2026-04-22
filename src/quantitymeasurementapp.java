@@ -1,56 +1,56 @@
 import java.util.Scanner;
 
-public class quantitymeasurementapp {
+enum LengthUnit {
+    FEET(1.0),
+    INCHES(1.0 / 12.0),
+    YARDS(3.0),
+    CENTIMETERS(0.393701 / 12.0);
 
-    public enum LengthUnit {
-        FEET(1.0),
-        INCHES(1.0 / 12.0),
-        YARDS(3.0),
-        CENTIMETERS(0.393701 / 12.0);
+    private final double conversionFactorToFeet;
 
-        private final double toFeetFactor;
+    LengthUnit(double conversionFactorToFeet) {
+        this.conversionFactorToFeet = conversionFactorToFeet;
+    }
 
-        LengthUnit(double toFeetFactor) {
-            this.toFeetFactor = toFeetFactor;
+    public double convertToBaseUnit(double value) {
+        return value * conversionFactorToFeet;
+    }
+
+    public double convertFromBaseUnit(double baseValue) {
+        return baseValue / conversionFactorToFeet;
+    }
+
+    public static LengthUnit fromString(String unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit cannot be null");
         }
 
-        public double toFeet(double value) {
-            return value * toFeetFactor;
-        }
+        String normalized = unit.trim().toLowerCase();
 
-        public double fromFeet(double feetValue) {
-            return feetValue / toFeetFactor;
-        }
-
-        public static LengthUnit fromString(String unit) {
-            if (unit == null) {
-                throw new IllegalArgumentException("Unit cannot be null");
-            }
-
-            String normalized = unit.trim().toLowerCase();
-
-            switch (normalized) {
-                case "ft":
-                case "foot":
-                case "feet":
-                    return FEET;
-                case "in":
-                case "inch":
-                case "inches":
-                    return INCHES;
-                case "yd":
-                case "yard":
-                case "yards":
-                    return YARDS;
-                case "cm":
-                case "centimeter":
-                case "centimeters":
-                    return CENTIMETERS;
-                default:
-                    throw new IllegalArgumentException("Unsupported unit: " + unit);
-            }
+        switch (normalized) {
+            case "ft":
+            case "foot":
+            case "feet":
+                return FEET;
+            case "in":
+            case "inch":
+            case "inches":
+                return INCHES;
+            case "yd":
+            case "yard":
+            case "yards":
+                return YARDS;
+            case "cm":
+            case "centimeter":
+            case "centimeters":
+                return CENTIMETERS;
+            default:
+                throw new IllegalArgumentException("Unsupported unit: " + unit);
         }
     }
+}
+
+public class quantitymeasurementapp {
 
     public static class QuantityLength {
         private final double value;
@@ -76,8 +76,8 @@ public class quantitymeasurementapp {
             return unit;
         }
 
-        private double toFeet() {
-            return unit.toFeet(value);
+        private double toBaseUnit() {
+            return unit.convertToBaseUnit(value);
         }
 
         public QuantityLength convertTo(LengthUnit targetUnit) {
@@ -85,8 +85,8 @@ public class quantitymeasurementapp {
                 throw new IllegalArgumentException("Target unit cannot be null");
             }
 
-            double valueInFeet = this.toFeet();
-            double convertedValue = targetUnit.fromFeet(valueInFeet);
+            double baseValue = this.toBaseUnit();
+            double convertedValue = targetUnit.convertFromBaseUnit(baseValue);
             return new QuantityLength(convertedValue, targetUnit);
         }
 
@@ -98,18 +98,17 @@ public class quantitymeasurementapp {
                 throw new IllegalArgumentException("Units cannot be null");
             }
 
-            double valueInFeet = sourceUnit.toFeet(value);
-            return targetUnit.fromFeet(valueInFeet);
+            double baseValue = sourceUnit.convertToBaseUnit(value);
+            return targetUnit.convertFromBaseUnit(baseValue);
         }
 
-        // UC6 method: result in first operand unit
         public QuantityLength add(QuantityLength other) {
             if (other == null) {
                 throw new IllegalArgumentException("Other quantity cannot be null");
             }
 
-            double sumInFeet = this.toFeet() + other.toFeet();
-            double resultInThisUnit = this.unit.fromFeet(sumInFeet);
+            double sumInBaseUnit = this.toBaseUnit() + other.toBaseUnit();
+            double resultInThisUnit = this.unit.convertFromBaseUnit(sumInBaseUnit);
             return new QuantityLength(resultInThisUnit, this.unit);
         }
 
@@ -121,7 +120,6 @@ public class quantitymeasurementapp {
             return first.add(second);
         }
 
-        // UC7 method: result in explicit target unit
         public QuantityLength add(QuantityLength other, LengthUnit targetUnit) {
             if (other == null) {
                 throw new IllegalArgumentException("Other quantity cannot be null");
@@ -130,8 +128,8 @@ public class quantitymeasurementapp {
                 throw new IllegalArgumentException("Target unit cannot be null");
             }
 
-            double sumInFeet = this.toFeet() + other.toFeet();
-            double resultInTargetUnit = targetUnit.fromFeet(sumInFeet);
+            double sumInBaseUnit = this.toBaseUnit() + other.toBaseUnit();
+            double resultInTargetUnit = targetUnit.convertFromBaseUnit(sumInBaseUnit);
             return new QuantityLength(resultInTargetUnit, targetUnit);
         }
 
@@ -153,12 +151,12 @@ public class quantitymeasurementapp {
             if (getClass() != obj.getClass()) return false;
 
             QuantityLength other = (QuantityLength) obj;
-            return Math.abs(this.toFeet() - other.toFeet()) < 0.0001;
+            return Math.abs(this.toBaseUnit() - other.toBaseUnit()) < 0.0001;
         }
 
         @Override
         public int hashCode() {
-            return Double.hashCode(Math.round(toFeet() * 10000.0) / 10000.0);
+            return Double.hashCode(Math.round(toBaseUnit() * 10000.0) / 10000.0);
         }
 
         @Override
@@ -167,19 +165,10 @@ public class quantitymeasurementapp {
         }
     }
 
-    public static void demonstrateLengthAddition(QuantityLength q1, QuantityLength q2, LengthUnit targetUnit) {
-        QuantityLength result = QuantityLength.add(q1, q2, targetUnit);
-        System.out.println("Output: " + result);
-    }
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
         try {
-            // Example input:
-            // 1.0 feet
-            // 12.0 inches
-            // yards
             double value1 = scanner.nextDouble();
             String unit1 = scanner.next();
             double value2 = scanner.nextDouble();
@@ -193,7 +182,7 @@ public class quantitymeasurementapp {
             QuantityLength result = q1.add(q2, targetUnit);
             System.out.println("Output: " + result);
         } catch (Exception e) {
-            System.out.println("Output: Invalid addition");
+            System.out.println("Output: Invalid operation");
         } finally {
             scanner.close();
         }
