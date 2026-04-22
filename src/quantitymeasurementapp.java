@@ -57,6 +57,13 @@ public class quantitymeasurementapp {
         private final LengthUnit unit;
 
         public QuantityLength(double value, LengthUnit unit) {
+            if (!Double.isFinite(value)) {
+                throw new IllegalArgumentException("Value must be finite");
+            }
+            if (unit == null) {
+                throw new IllegalArgumentException("Unit cannot be null");
+            }
+
             this.value = value;
             this.unit = unit;
         }
@@ -84,6 +91,9 @@ public class quantitymeasurementapp {
         }
 
         public static double convert(double value, LengthUnit sourceUnit, LengthUnit targetUnit) {
+            if (!Double.isFinite(value)) {
+                throw new IllegalArgumentException("Value must be finite");
+            }
             if (sourceUnit == null || targetUnit == null) {
                 throw new IllegalArgumentException("Units cannot be null");
             }
@@ -92,15 +102,13 @@ public class quantitymeasurementapp {
             return targetUnit.fromFeet(valueInFeet);
         }
 
+        // UC6 method: result in first operand unit
         public QuantityLength add(QuantityLength other) {
             if (other == null) {
                 throw new IllegalArgumentException("Other quantity cannot be null");
             }
 
-            double thisInFeet = this.toFeet();
-            double otherInFeet = other.toFeet();
-            double sumInFeet = thisInFeet + otherInFeet;
-
+            double sumInFeet = this.toFeet() + other.toFeet();
             double resultInThisUnit = this.unit.fromFeet(sumInFeet);
             return new QuantityLength(resultInThisUnit, this.unit);
         }
@@ -111,6 +119,31 @@ public class quantitymeasurementapp {
             }
 
             return first.add(second);
+        }
+
+        // UC7 method: result in explicit target unit
+        public QuantityLength add(QuantityLength other, LengthUnit targetUnit) {
+            if (other == null) {
+                throw new IllegalArgumentException("Other quantity cannot be null");
+            }
+            if (targetUnit == null) {
+                throw new IllegalArgumentException("Target unit cannot be null");
+            }
+
+            double sumInFeet = this.toFeet() + other.toFeet();
+            double resultInTargetUnit = targetUnit.fromFeet(sumInFeet);
+            return new QuantityLength(resultInTargetUnit, targetUnit);
+        }
+
+        public static QuantityLength add(QuantityLength first, QuantityLength second, LengthUnit targetUnit) {
+            if (first == null || second == null) {
+                throw new IllegalArgumentException("Quantities cannot be null");
+            }
+            if (targetUnit == null) {
+                throw new IllegalArgumentException("Target unit cannot be null");
+            }
+
+            return first.add(second, targetUnit);
         }
 
         @Override
@@ -134,8 +167,8 @@ public class quantitymeasurementapp {
         }
     }
 
-    public static void demonstrateLengthAddition(QuantityLength q1, QuantityLength q2) {
-        QuantityLength result = QuantityLength.add(q1, q2);
+    public static void demonstrateLengthAddition(QuantityLength q1, QuantityLength q2, LengthUnit targetUnit) {
+        QuantityLength result = QuantityLength.add(q1, q2, targetUnit);
         System.out.println("Output: " + result);
     }
 
@@ -146,15 +179,18 @@ public class quantitymeasurementapp {
             // Example input:
             // 1.0 feet
             // 12.0 inches
+            // yards
             double value1 = scanner.nextDouble();
             String unit1 = scanner.next();
             double value2 = scanner.nextDouble();
             String unit2 = scanner.next();
+            String targetUnitText = scanner.next();
 
             QuantityLength q1 = new QuantityLength(value1, LengthUnit.fromString(unit1));
             QuantityLength q2 = new QuantityLength(value2, LengthUnit.fromString(unit2));
+            LengthUnit targetUnit = LengthUnit.fromString(targetUnitText);
 
-            QuantityLength result = q1.add(q2);
+            QuantityLength result = q1.add(q2, targetUnit);
             System.out.println("Output: " + result);
         } catch (Exception e) {
             System.out.println("Output: Invalid addition");
