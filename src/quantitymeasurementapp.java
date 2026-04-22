@@ -1,10 +1,7 @@
-package com.apps.quantitymeasurement;
-
 import java.util.Scanner;
 
-public class quantitymeasurementapp {
+class quantityMeasurementApp {
 
-    // Feet class
     public static class Feet {
         private final double value;
 
@@ -17,7 +14,6 @@ public class quantitymeasurementapp {
             if (this == obj) return true;
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
-
             Feet other = (Feet) obj;
             return Double.compare(this.value, other.value) == 0;
         }
@@ -28,7 +24,6 @@ public class quantitymeasurementapp {
         }
     }
 
-    // Inches class
     public static class Inches {
         private final double value;
 
@@ -41,7 +36,6 @@ public class quantitymeasurementapp {
             if (this == obj) return true;
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
-
             Inches other = (Inches) obj;
             return Double.compare(this.value, other.value) == 0;
         }
@@ -52,10 +46,9 @@ public class quantitymeasurementapp {
         }
     }
 
-    // Method for Feet equality
     public static void demonstrateFeetEquality(Scanner scanner) {
         try {
-            String input = scanner.nextLine(); // e.g., "1.0 ft and 1.0 ft"
+            String input = scanner.nextLine();
             String[] parts = input.split(" ");
 
             double v1 = Double.parseDouble(parts[0]);
@@ -74,10 +67,9 @@ public class quantitymeasurementapp {
         }
     }
 
-    // Method for Inches equality
     public static void demonstrateInchesEquality(Scanner scanner) {
         try {
-            String input = scanner.nextLine(); // e.g., "1.0 inch and 1.0 inch"
+            String input = scanner.nextLine();
             String[] parts = input.split(" ");
 
             double v1 = Double.parseDouble(parts[0]);
@@ -96,17 +88,10 @@ public class quantitymeasurementapp {
         }
     }
 
-    // Main method
     public static void main(String[] args) {
-
         Scanner scanner = new Scanner(System.in);
-
-        // Feet input
         demonstrateFeetEquality(scanner);
-
-        // Inches input
         demonstrateInchesEquality(scanner);
-
         scanner.close();
     }
 }
