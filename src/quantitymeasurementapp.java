@@ -1,12 +1,66 @@
 import java.util.Scanner;
 
-class quantityMeasurementApp {
+public class quantitymeasurementapp {
 
-    public static class Feet {
+    // Step 1: Enum for supported length units with conversion factors to feet
+    public enum LengthUnit {
+        FEET(1.0),
+        INCHES(1.0 / 12.0);
+
+        private final double toFeetFactor;
+
+        LengthUnit(double toFeetFactor) {
+            this.toFeetFactor = toFeetFactor;
+        }
+
+        public double toFeet(double value) {
+            return value * toFeetFactor;
+        }
+
+        public static LengthUnit fromString(String unit) {
+            if (unit == null) {
+                throw new IllegalArgumentException("Unit cannot be null");
+            }
+
+            String normalized = unit.trim().toLowerCase();
+
+            switch (normalized) {
+                case "ft":
+                case "foot":
+                case "feet":
+                    return FEET;
+
+                case "in":
+                case "inch":
+                case "inches":
+                    return INCHES;
+
+                default:
+                    throw new IllegalArgumentException("Unsupported unit: " + unit);
+            }
+        }
+    }
+
+    // Step 2: Generic quantity class for length measurement
+    public static class QuantityLength {
         private final double value;
+        private final LengthUnit unit;
 
-        public Feet(double value) {
+        public QuantityLength(double value, LengthUnit unit) {
             this.value = value;
+            this.unit = unit;
+        }
+
+        public double getValue() {
+            return value;
+        }
+
+        public LengthUnit getUnit() {
+            return unit;
+        }
+
+        private double toFeet() {
+            return unit.toFeet(value);
         }
 
         @Override
@@ -14,84 +68,49 @@ class quantityMeasurementApp {
             if (this == obj) return true;
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
-            Feet other = (Feet) obj;
-            return Double.compare(this.value, other.value) == 0;
+
+            QuantityLength other = (QuantityLength) obj;
+            return Double.compare(this.toFeet(), other.toFeet()) == 0;
         }
 
         @Override
         public int hashCode() {
-            return Double.hashCode(value);
-        }
-    }
-
-    public static class Inches {
-        private final double value;
-
-        public Inches(double value) {
-            this.value = value;
+            return Double.hashCode(toFeet());
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
-            Inches other = (Inches) obj;
-            return Double.compare(this.value, other.value) == 0;
-        }
-
-        @Override
-        public int hashCode() {
-            return Double.hashCode(value);
+        public String toString() {
+            return "Quantity(" + value + ", \"" + unit.name().toLowerCase() + "\")";
         }
     }
 
-    public static void demonstrateFeetEquality(Scanner scanner) {
-        try {
-            String input = scanner.nextLine();
-            String[] parts = input.split(" ");
-
-            double v1 = Double.parseDouble(parts[0]);
-            double v2 = Double.parseDouble(parts[3]);
-
-            Feet f1 = new Feet(v1);
-            Feet f2 = new Feet(v2);
-
-            if (f1.equals(f2)) {
-                System.out.println("Output: Equal (true)");
-            } else {
-                System.out.println("Output: Not Equal (false)");
-            }
-        } catch (Exception e) {
-            System.out.println("Output: Not Equal (false)");
-        }
-    }
-
-    public static void demonstrateInchesEquality(Scanner scanner) {
-        try {
-            String input = scanner.nextLine();
-            String[] parts = input.split(" ");
-
-            double v1 = Double.parseDouble(parts[0]);
-            double v2 = Double.parseDouble(parts[3]);
-
-            Inches i1 = new Inches(v1);
-            Inches i2 = new Inches(v2);
-
-            if (i1.equals(i2)) {
-                System.out.println("Output: Equal (true)");
-            } else {
-                System.out.println("Output: Not Equal (false)");
-            }
-        } catch (Exception e) {
-            System.out.println("Output: Not Equal (false)");
-        }
+    // Helper to parse input like: 1.0 feet
+    public static QuantityLength readQuantity(Scanner scanner) {
+        double value = scanner.nextDouble();
+        String unitText = scanner.next();
+        LengthUnit unit = LengthUnit.fromString(unitText);
+        return new QuantityLength(value, unit);
     }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        demonstrateFeetEquality(scanner);
-        demonstrateInchesEquality(scanner);
-        scanner.close();
+
+        try {
+            // Example user input:
+            // 1.0 feet
+            // 12.0 inches
+            QuantityLength q1 = readQuantity(scanner);
+            QuantityLength q2 = readQuantity(scanner);
+
+            if (q1.equals(q2)) {
+                System.out.println("Output: Equal (true)");
+            } else {
+                System.out.println("Output: Not Equal (false)");
+            }
+        } catch (Exception e) {
+            System.out.println("Output: Not Equal (false)");
+        } finally {
+            scanner.close();
+        }
     }
 }
