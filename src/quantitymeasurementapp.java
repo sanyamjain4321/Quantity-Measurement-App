@@ -2,10 +2,11 @@ import java.util.Scanner;
 
 public class quantitymeasurementapp {
 
-    // Step 1: Enum for supported length units with conversion factors to feet
     public enum LengthUnit {
         FEET(1.0),
-        INCHES(1.0 / 12.0);
+        INCHES(1.0 / 12.0),
+        YARDS(3.0),
+        CENTIMETERS(0.393701 / 12.0);
 
         private final double toFeetFactor;
 
@@ -29,19 +30,24 @@ public class quantitymeasurementapp {
                 case "foot":
                 case "feet":
                     return FEET;
-
                 case "in":
                 case "inch":
                 case "inches":
                     return INCHES;
-
+                case "yd":
+                case "yard":
+                case "yards":
+                    return YARDS;
+                case "cm":
+                case "centimeter":
+                case "centimeters":
+                    return CENTIMETERS;
                 default:
                     throw new IllegalArgumentException("Unsupported unit: " + unit);
             }
         }
     }
 
-    // Step 2: Generic quantity class for length measurement
     public static class QuantityLength {
         private final double value;
         private final LengthUnit unit;
@@ -80,11 +86,10 @@ public class quantitymeasurementapp {
 
         @Override
         public String toString() {
-            return "Quantity(" + value + ", \"" + unit.name().toLowerCase() + "\")";
+            return "Quantity(" + value + ", " + unit + ")";
         }
     }
 
-    // Helper to parse input like: 1.0 feet
     public static QuantityLength readQuantity(Scanner scanner) {
         double value = scanner.nextDouble();
         String unitText = scanner.next();
@@ -96,9 +101,6 @@ public class quantitymeasurementapp {
         Scanner scanner = new Scanner(System.in);
 
         try {
-            // Example user input:
-            // 1.0 feet
-            // 12.0 inches
             QuantityLength q1 = readQuantity(scanner);
             QuantityLength q2 = readQuantity(scanner);
 
